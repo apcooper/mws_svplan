@@ -42,6 +42,15 @@ desi_mask:
     # - [STD_FAINT_BEST,   37, "High quality faint standard stars", {obsconditions: DARK|GRAY}]
     # - [STD_BRIGHT_BEST,  38, "High quality bright standard stars", {obsconditions: BRIGHT}]
 
+    # Tempoary hack for dark time MWS targets
+    # Fainter MWS_MAIN extension for SV, selected on magnitude only
+    - [DARK_MWS_MAIN_BLUE_FAINT,           40, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
+    - [DARK_MWS_MAIN_BLUE_FAINT_NORTH,     41, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
+    - [DARK_MWS_MAIN_BLUE_FAINT_SOUTH,     42, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
+    - [DARK_MWS_MAIN_RED_FAINT,            43, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]    
+    - [DARK_MWS_MAIN_RED_FAINT_NORTH,      44, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
+    - [DARK_MWS_MAIN_RED_FAINT_SOUTH,      45, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]   
+
     #- Reserved convenience bits that can, e.g., be set downstream of desitarget
     - [NO_TARGET,   49, "No known target at this location",
         {obsconditions: DARK|GRAY|BRIGHT|POOR|TWILIGHT12|TWILIGHT18}]
@@ -51,12 +60,13 @@ desi_mask:
     - [IN_BRIGHT_OBJECT,    51, "Too near a bright object; DO NOT OBSERVE", {obsconditions: APOCALYPSE}]
     - [NEAR_BRIGHT_OBJECT,  52, "Near a bright object but ok to observe",
             {obsconditions: DARK|GRAY|BRIGHT|POOR|TWILIGHT12|TWILIGHT18}]
-
+    
     #- A bit for another survey is set
     - [BGS_ANY,             60, "Any BGS bit is set", {obsconditions: BRIGHT}]
     - [MWS_ANY,             61, "Any MWS bit is set", {obsconditions: BRIGHT}]
     - [SECONDARY_ANY,       62, "Any secondary bit is set",
         {obsconditions: DARK|GRAY|BRIGHT|POOR|TWILIGHT12|TWILIGHT18}]
+    
     
 #- Bright Galaxy Survey
 bgs_mask:    
@@ -97,13 +107,6 @@ mws_mask:
     - [MWS_MAIN_RED_NORTH,  12, "MWS magnitude limited red sample from Bok/Mosaic",      {obsconditions: BRIGHT|GRAY|DARK}]
     - [MWS_MAIN_RED_SOUTH,  13, "MWS magnitude limited red sample from DECam",           {obsconditions: BRIGHT|GRAY|DARK}]
     
-    #- 14: Fainter MWS_MAIN extension for SV, selected on magnitude only
-    - [MWS_MAIN_BLUE_FAINT,           14, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
-    - [MWS_MAIN_BLUE_FAINT_NORTH,     15, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
-    - [MWS_MAIN_BLUE_FAINT_SOUTH,     16, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
-    - [MWS_MAIN_RED_FAINT,            17, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]    
-    - [MWS_MAIN_RED_FAINT_NORTH,      18, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]
-    - [MWS_MAIN_RED_FAINT_SOUTH,      19, "MWS faint magnitude limited sample from DECam", {obsconditions: GRAY|DARK}]   
 
 #- Observing conditions
 #- These are a bitmask to allow target bits to specify multiple conditions
@@ -178,6 +181,14 @@ priorities:
         STD_BRIGHT: -1
         # STD_FAINT_BEST: -1
         # STD_BRIGHT_BEST: -1
+        # MWS Dark time hacks
+        DARK_MWS_MAIN_BLUE_FAINT:          {UNOBS: 1550, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
+        DARK_MWS_MAIN_BLUE_FAINT_NORTH:    SAME_AS_DARK_MWS_MAIN_BLUE_FAINT
+        DARK_MWS_MAIN_BLUE_FAINT_SOUTH:    SAME_AS_DARK_MWS_MAIN_BLUE_FAINT
+        DARK_MWS_MAIN_RED_FAINT:           {UNOBS: 1540, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
+        DARK_MWS_MAIN_RED_FAINT_NORTH:     SAME_AS_DARK_MWS_MAIN_RED_FAINT
+        DARK_MWS_MAIN_RED_FAINT_SOUTH:     SAME_AS_DARK_MWS_MAIN_RED_FAINT 
+        #
         SV: -1
         NO_TARGET:  -1
         #- placeholders to show we haven't forgotten these bits, but the
@@ -212,12 +223,6 @@ priorities:
     mws_mask: 
         MWS_WD:                       {UNOBS: 2998, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
         MWS_NEARBY:                   {UNOBS: 1600, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
-        MWS_MAIN_BLUE_FAINT:          {UNOBS: 1550, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
-        MWS_MAIN_BLUE_FAINT_NORTH:    SAME_AS_MWS_MAIN_BLUE_FAINT
-        MWS_MAIN_BLUE_FAINT_SOUTH:    SAME_AS_MWS_MAIN_BLUE_FAINT
-        MWS_MAIN_RED_FAINT:           {UNOBS: 1540, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
-        MWS_MAIN_RED_FAINT_NORTH:     SAME_AS_MWS_MAIN_RED_FAINT
-        MWS_MAIN_RED_FAINT_SOUTH:     SAME_AS_MWS_MAIN_RED_FAINT 
         MWS_MAIN_BLUE:                {UNOBS: 1500, DONE: 2, OBS: 1, DONOTOBSERVE: 0}
         MWS_MAIN_BLUE_NORTH:          SAME_AS_MWS_MAIN_BLUE
         MWS_MAIN_BLUE_SOUTH:          SAME_AS_MWS_MAIN_BLUE
@@ -284,11 +289,11 @@ numobs:
         BGS_KNOWN_SDSS: 1
         BGS_KNOWN_BOSS: 1
 
-    # ADM initial number of observations for targets in the Bright Galaxy Survey
+    # ADM initial number of observations for targets in the Milky Way Survey
     mws_mask: 
-        MWS_BROAD:                    1
-        MWS_WD:                       1
-        MWS_NEARBY:                   1
+        MWS_BROAD:                    3
+        MWS_WD:                       3
+        MWS_NEARBY:                   3
         MWS_BROAD_NORTH:              SAME_AS_MWS_BROAD
         MWS_BROAD_SOUTH:              SAME_AS_MWS_BROAD
         MWS_MAIN_BLUE:                SAME_AS_MWS_BROAD
