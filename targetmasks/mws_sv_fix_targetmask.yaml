@@ -262,6 +262,14 @@ numobs:
         STD_BRIGHT: -1
         # STD_FAINT_BEST: -1
         # STD_BRIGHT_BEST: -1
+        # MWS Dark time hacks
+        DARK_MWS_MAIN_BLUE_FAINT:          1
+        DARK_MWS_MAIN_BLUE_FAINT_NORTH:    SAME_AS_DARK_MWS_MAIN_BLUE_FAINT
+        DARK_MWS_MAIN_BLUE_FAINT_SOUTH:    SAME_AS_DARK_MWS_MAIN_BLUE_FAINT
+        DARK_MWS_MAIN_RED_FAINT:           1
+        DARK_MWS_MAIN_RED_FAINT_NORTH:     SAME_AS_DARK_MWS_MAIN_RED_FAINT
+        DARK_MWS_MAIN_RED_FAINT_SOUTH:     SAME_AS_DARK_MWS_MAIN_RED_FAINT 
+        #
         SV: -1
         NO_TARGET:  -1
         #- placeholders to show we haven't forgotten these bits, but the
