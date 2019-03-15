@@ -136,7 +136,7 @@ def isMWS_main(gflux=None, rflux=None, zflux=None, w1flux=None, w2flux=None,
                pmra=None, pmdec=None, parallax=None, obs_rflux=None,
                gaia=None, gaiagmag=None, gaiabmag=None, gaiarmag=None,
                gaiaaen=None, gaiadupsource=None, 
-               objtype=None, primary=None, south=True):
+               objtype=None, primary=None, south=True,mainsurvey=True):
     """Set bits for main ``MWS`` targets.
 
     Args:
@@ -186,10 +186,11 @@ def isMWS_main(gflux=None, rflux=None, zflux=None, w1flux=None, w2flux=None,
                               rflux=rflux, gaiadupsource=gaiadupsource, 
                               objtype=objtype, primary=primary)
 
-    mws_faint = notinMWS_faint_mask(gfracmasked=gfracmasked, gnobs=gnobs,
-                              gflux=gflux, rfracmasked=rfracmasked, rnobs=rnobs,
-                              rflux=rflux, 
-                              objtype=objtype, primary=primary)
+    if not mainsurvey:
+        mws_faint = notinMWS_faint_mask(gfracmasked=gfracmasked, gnobs=gnobs,
+                                  gflux=gflux, rfracmasked=rfracmasked, rnobs=rnobs,
+                                  rflux=rflux, 
+                                  objtype=objtype, primary=primary)
 
     
     # ADM pass the mws that pass cuts as primary, to restrict to the
@@ -201,17 +202,19 @@ def isMWS_main(gflux=None, rflux=None, zflux=None, w1flux=None, w2flux=None,
         primary=mws_main, south=south
     )
 
-    mws_red_faint, mws_blue_faint = isMWS_faint_colors(
-        gflux=gflux, rflux=rflux, zflux=zflux, w1flux=w1flux, w2flux=w2flux,
-        obs_rflux=obs_rflux,
-        primary=mws_faint, south=south
-    )
-    
-    return mws_broad, mws_red, mws_blue, mws_red_faint, mws_blue_faint
+    if mainsurvey:
+        return mws_broad, mws_red, mws_blue
+    else:
+        mws_red_faint, mws_blue_faint = isMWS_faint_colors(
+            gflux=gflux, rflux=rflux, zflux=zflux, w1flux=w1flux, w2flux=w2flux,
+            obs_rflux=obs_rflux,
+            primary=mws_faint, south=south
+        )
 
-############################################################
+        return mws_broad, mws_red, mws_blue, mws_red_faint, mws_blue_faint
+
 def set_target_bits(photsys_north, photsys_south, obs_rflux,
-                    gflux, rflux, zflux, w1flux, w2flux,
+                    gflux, rflux, zflux, w1flux, w2flux, rfiberflux,
                     objtype, release, gfluxivar, rfluxivar, zfluxivar,
                     gnobs, rnobs, znobs, gfracflux, rfracflux, zfracflux,
                     gfracmasked, rfracmasked, zfracmasked,
@@ -221,9 +224,8 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
                     gaiagmag, gaiabmag, gaiarmag, gaiaaen, gaiadupsource,
                     gaiaparamssolved, gaiabprpfactor, gaiasigma5dmax, galb,
                     tcnames, qso_optical_cuts, qso_selection, brightstarinblob,
-                    Grr, primary):
+                    Grr, primary,mainsurvey=True):
     """Perform target selection on parameters, returning target mask arrays.
-
     Parameters
     ----------
     photsys_north, photsys_south : :class:`~numpy.ndarray`
@@ -233,6 +235,10 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
         `rflux` but WITHOUT any Galactic extinction correction.
     gflux, rflux, zflux, w1flux, w2flux : :class:`~numpy.ndarray`
         The flux in nano-maggies of g, r, z, W1 and W2 bands.
+        Corrected for Galactic extinction.
+    rfiberflux : :class:`~numpy.ndarray`
+        Predicted fiber flux in 1 arcsecond seeing in r-band.
+        Corrected for Galactic extinction.
     objtype, release : :class:`~numpy.ndarray`
         `The Legacy Surveys`_ imaging ``TYPE`` and ``RELEASE`` columns.
     gfluxivar, rfluxivar, zfluxivar: :class:`~numpy.ndarray`
@@ -290,17 +296,16 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
         Specifies which target masks yaml file and target selection cuts
         to use. Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
-
     Returns
     -------
     :class:`~numpy.ndarray`
         (desi_target, bgs_target, mws_target) where each element is
         an ndarray of target selection bitmask flags for each object.
-
     Notes
     -----
     - Gaia quantities have units that are the same as `the Gaia data model`_.
     """
+
     from desitarget.targetmask import desi_mask, bgs_mask, mws_mask
     from desitarget.cuts import isBGS
     from desitarget.cuts import isMWS_main, isMWS_nearby, isMWS_WD
@@ -408,7 +413,7 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
         bgs_bright_north, bgs_bright_south,      \
             bgs_faint_north, bgs_faint_south,    \
             bgs_wise_north, bgs_wise_south =     \
-                                                 bgs_classes
+            bgs_classes
     else:
         # ADM if not running the BGS selection, set everything to arrays of False
         bgs_bright_north, bgs_bright_south = ~primary, ~primary
@@ -427,19 +432,25 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
             mws_classes.append(
                 isMWS_main(
                     gaia=gaia, gaiaaen=gaiaaen, gaiadupsource=gaiadupsource,
-                    gflux=gflux, rflux=rflux, obs_rflux=obs_rflux,
+                    gflux=gflux, rflux=rflux, obs_rflux=obs_rflux, objtype=objtype,
                     gnobs=gnobs, rnobs=rnobs,
                     gfracmasked=gfracmasked, rfracmasked=rfracmasked,
                     pmra=pmra, pmdec=pmdec, parallax=parallax,
-                    objtype=objtype,
                     primary=primary, south=south
                 )
             )
 
-        mws_broad_n, mws_red_n, mws_blue_n,  \
-        mws_red_faint_n, mws_blue_faint_n,   \
-        mws_broad_s, mws_red_s, mws_blue_s,  \
-        mws_red_faint_s, mws_blue_faint_s =  np.vstack(mws_classes)
+        # APC
+        if mainsurvey:
+            # Main survey classes
+            mws_broad_n, mws_red_n, mws_blue_n,  \
+            mws_broad_s, mws_red_s, mws_blue_s  =  np.vstack(mws_classes)
+        else:
+            # SV classes
+            mws_broad_n, mws_red_n, mws_blue_n,  \
+            mws_red_faint_n, mws_blue_faint_n,   \
+            mws_broad_s, mws_red_s, mws_blue_s,  \
+            mws_red_faint_s, mws_blue_faint_s =  np.vstack(mws_classes)
 
         mws_nearby = isMWS_nearby(
             gaia=gaia, gaiagmag=gaiagmag, parallax=parallax,
@@ -457,14 +468,16 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
         mws_broad_n, mws_red_n, mws_blue_n = ~primary, ~primary, ~primary
         mws_broad_s, mws_red_s, mws_blue_s = ~primary, ~primary, ~primary
         mws_nearby, mws_wd = ~primary, ~primary
-        
-        mws_blue_faint   = ~primary
-        mws_blue_faint_s = ~primary
-        mws_blue_faint_n = ~primary
-        
-        mws_red_faint   = ~primary
-        mws_red_faint_s = ~primary
-        mws_red_faint_n = ~primary
+      
+        # APC
+        if not mainsurvey:
+            mws_blue_faint   = ~primary
+            mws_blue_faint_s = ~primary
+            mws_blue_faint_n = ~primary
+
+            mws_red_faint   = ~primary
+            mws_red_faint_s = ~primary
+            mws_red_faint_n = ~primary
 
     if "STD" in tcnames:
         # ADM Make sure to pass all of the needed columns! At one point we stopped
@@ -501,9 +514,10 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
     mws_red   = (mws_red_n & photsys_north) | (mws_red_s & photsys_south)
 
     # APC
-    mws_blue_faint = (mws_blue_faint_n & photsys_north) | (mws_blue_faint_s & photsys_south)
-    mws_red_faint  = (mws_red_faint_n  & photsys_north) | (mws_red_faint_s  & photsys_south)
-    
+    if not mainsurvey:
+        mws_blue_faint = (mws_blue_faint_n & photsys_north) | (mws_blue_faint_s & photsys_south)
+        mws_red_faint  = (mws_red_faint_n  & photsys_north) | (mws_red_faint_s  & photsys_south)
+
     # Construct the targetflag bits for DECaLS (i.e. South).
     desi_target = lrg_south * desi_mask.LRG_SOUTH
     desi_target |= elg_south * desi_mask.ELG_SOUTH
@@ -567,16 +581,18 @@ def set_target_bits(photsys_north, photsys_south, obs_rflux,
     mws_target |= mws_red_s * mws_mask.MWS_MAIN_RED_SOUTH
 
     # APC
-    mws_target |= mws_blue_faint   * mws_mask.MWS_MAIN_BLUE_FAINT
-    mws_target |= mws_blue_faint_n * mws_mask.MWS_MAIN_BLUE_FAINT_NORTH
-    mws_target |= mws_blue_faint_s * mws_mask.MWS_MAIN_BLUE_FAINT_SOUTH
+    if not mainsurvey:
+        mws_target |= mws_blue_faint   * mws_mask.MWS_MAIN_BLUE_FAINT
+        mws_target |= mws_blue_faint_n * mws_mask.MWS_MAIN_BLUE_FAINT_NORTH
+        mws_target |= mws_blue_faint_s * mws_mask.MWS_MAIN_BLUE_FAINT_SOUTH
 
-    mws_target |= mws_red_faint   * mws_mask.MWS_MAIN_RED_FAINT
-    mws_target |= mws_red_faint_n * mws_mask.MWS_MAIN_RED_FAINT_NORTH
-    mws_target |= mws_red_faint_s * mws_mask.MWS_MAIN_RED_FAINT_SOUTH
+        mws_target |= mws_red_faint   * mws_mask.MWS_MAIN_RED_FAINT
+        mws_target |= mws_red_faint_n * mws_mask.MWS_MAIN_RED_FAINT_NORTH
+        mws_target |= mws_red_faint_s * mws_mask.MWS_MAIN_RED_FAINT_SOUTH
 
     # Are any BGS or MWS bit set?  Tell desi_target too.
     desi_target |= (bgs_target != 0) * desi_mask.BGS_ANY
     desi_target |= (mws_target != 0) * desi_mask.MWS_ANY
 
     return desi_target, bgs_target, mws_target
+
