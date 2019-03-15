@@ -2,7 +2,7 @@
 
 These notebooks are experiments with the tile layout, target selection, priority scheme etc. for MWS SV. For a given plan, each experiment assigns fibers to targets.
 
-Changing target selections and priorities requires some hacking of `desitarget` (see Background Information below). The aim of the setup here is to make trials with different selection functions straightforward.
+Changing target selections and priorities requires some hacking of `desitarget` (see Background Information below). The aim of the setup here is to make that as painless as possible, so that we can quickly make trials with different selection functions. T
  
 ## Summary
 
