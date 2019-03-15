@@ -51,7 +51,7 @@ In this example, I use the main survey selection function and include BGS target
 
 ### `example_mainsurvey_analysis.ipynb`
 
-The intention is to do some useful analysis of the output data from fiberassign. Currently this just makes a few simple plots to demonstrate how to parse the output.
+The intention is to do some useful analysis of the output data from fiberassign. Currently this just makes a few simple plots to demonstrate setting up the notebook and parsing the output.
 
 ## Background Information / caveats
 
