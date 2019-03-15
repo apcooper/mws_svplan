@@ -20,6 +20,8 @@ The directories in this repository are:
 
 ## Instructions
 
+### Per-notebook setup
+
 Each notebook starts with a cell that imports a preamble common to all experiments: 
 ```python
 # %load scripts/nbpreamble.py
