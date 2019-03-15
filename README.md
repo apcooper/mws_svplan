@@ -2,11 +2,11 @@
 
 These notebooks are experiments with the tile layout, target selection, priority scheme etc. for MWS SV. For a given plan, each experiment assigns fibers to targets.
 
-Changing target selections and priorities requires some hacking of `desitarget` (see Background Information below).
+Changing target selections and priorities requires some hacking of `desitarget` (see Background Information below). The aim of the setup here is to make trials with different selection functions straightforward.
  
 ## Summary
 
-Experiments with different target selections are split into pairs of notebooks in the toplevel directory of the repository: `sv_design_$RUN.ipynb` and `sv_analysis_$RUN.ipynb` where `$RUN` is a unique label for the experiment and corresponds to an output dir under `./runs`.
+Experiments with different target selections are split into pairs of notebooks in the toplevel directory of the repository: `$RUN_design.ipynb` and `$RUN_analysis.ipynb` where `$RUN` is a unique label for the experiment and corresponds to an output dir under `./runs`.
 
 The 'design' notebook deals with the tile setup and the generation of data. The 'analysis' notebook is for the analysis of the output of fiberassignment. See examples below. The split into two notebooks is so that all the analysis steps can be re-run without regenerating the data.
 
@@ -34,7 +34,24 @@ Uncomment this line and run the cell. This only needs to be done if the contents
 
 ## Examples
 
+### `example_mainsurvey_design.ipynb`
 
+The `design` notebook does the following:
+
+* Makes a cache of sweep headers for a particular set of sweeps. Set `SWEEPS_RESET = True` on first run of (any) notebook and `false` thereafter, only need to change again if using different DR for sweeps. Different notebokes share the cahce of sweep hearders.
+* Defines a set of DESI pointings to observe (not bound to the standard tile set) -- functions in the `apc_sv` python package do a quick setup of single-FOV pointings and simple dithers;
+* Finds the sweep bricks that overlap those tiles;
+* Creates a target catalog from those sweep bricks using `select_targets`:
+  - Patches the `targetmask` target definitions and the selection functions called by `select_targets`
+* Creates an MTL file (fiberassign input) from the target catalog;
+* Selects standard stars from the MTL;
+* Runs `fiberassign`.
+
+In this example, I use the main survey selection function and include BGS targets, so the output is representative of one tile from pass 1 of the main survey. 
+
+### `example_mainsurvey_analysis.ipynb`
+
+The intention is to do some useful analysis of the output data from fiberassign. Currently this just makes a few simple plots to demonstrate how to parse the output.
 
 ## Background Information / caveats
 
