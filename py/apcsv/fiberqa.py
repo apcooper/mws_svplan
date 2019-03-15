@@ -15,7 +15,7 @@ from desitarget.targetmask import desi_mask, bgs_mask, mws_mask
 def glob_fibers(path):
     """
     """
-    return glob.glob(os.path.join(path,'tile_*.fits'))
+    return glob.glob(os.path.join(path,'tile-*.fits'))
 
 ############################################################
 def load_fiber_data(path,ext='FIBERASSIGN'):
@@ -26,7 +26,7 @@ def load_fiber_data(path,ext='FIBERASSIGN'):
     print('Have {} tiles'.format(len(fiber_files)))
     for fiber_file in fiber_files:
         filename = os.path.basename(fiber_file)
-        itile    = int(os.path.splitext(filename)[0].split('_')[1])
+        itile    = int(os.path.splitext(filename)[0].split('-')[1])
         d        = fits.getdata(fiber_file,ext)
         data[itile] = d
     return data
@@ -146,7 +146,8 @@ def report_survey_overlaps(tiledata):
         
         mws_str = list()
         for _ in mws_bits:
-            mws_str.append(util.mws_bits_to_name[_])
+            if _ in util.mws_bits_to_name:
+                mws_str.append(util.mws_bits_to_name[_])
         mws_str = ' | '.join(mws_str)
         
         line = ' {:30s} {:4d} {:s}'.format(desi_str,_c,mws_str)
