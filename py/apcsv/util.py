@@ -30,21 +30,31 @@ def expand_mws(*abbrevs):
 
 ############################################################
 
-mws_bits_to_name = {
-    0: 'Non-MWS',
-    mws_mask.mask(expand_mws('M','MN','MS')): 'BROAD (RED REJECT)',
-    mws_mask.mask(expand_mws('MR','MRN','MRS')): 'RED',
-    mws_mask.mask(expand_mws('MB','MBN','MBS')): 'BLUE',
-    mws_mask.mask(expand_mws('WD')): 'WD',
-    mws_mask.mask(expand_mws('NEARBY')): 'NEARBY',
-    mws_mask.mask(expand_mws('WD','NEARBY')): 'WD & NEARBY',
-    mws_mask.mask(expand_mws('M','MN','MS','NEARBY')): 'BROAD & NEARBY',
-    mws_mask.mask(expand_mws('WD','MB','MBN','MBS')): 'BLUE & WD',
-    mws_mask.mask(expand_mws('BF','BFN','BFS')): 'BLUE FAINT',
-    mws_mask.mask(expand_mws('RF','RFN','RFS')): 'RED FAINT',
-    mws_mask.mask(expand_mws('WD','BF','BFN','BFS')): 'BLUE FAINT & WD',
-    mws_mask.mask(expand_mws('WD','RF','RFN','RFS')): 'RED FAINT & WD',
+mws_bits_to_name    = dict()
+mws_bits_to_name[0] = 'NON-MWS'
+
+bits_to_name_map = {
+    'BROAD (RED REJECT)': ('M','MN','MS'),
+    'RED'               : ('MR','MRN','MRS'),       
+    'BLUE'              : ('MB','MBN','MBS'),       
+    'WD'                : ('WD',),              
+    'NEARBY'            : ('NEARBY',),         
+    'WD & NEARBY'       : ('WD','NEARBY'),
+    'BROAD & NEARBY'    : ('M','MN','MS','NEARBY'), 
+    'BLUE & WD'         : ('WD','MB','MBN','MBS'),  
+    'BLUE FAINT'        : ('BF','BFN','BFS'),  
+    'RED FAINT'         : ('RF','RFN','RFS'),  
+    'BLUE FAINT & WD'   : ('WD','BF','BFN','BFS'), 
+    'RED FAINT & WD'    : ('WD','RF','RFN','RFS'), 
 }
+
+for k,v in bits_to_name_map.items():
+    try:
+        expanded_mask_bits = mws_mask.mask(expand_mws(*v))
+    except KeyError:
+        print('{} not defined in current targetmask'.format(k))
+        continue
+    mws_bits_to_name[expanded_mask_bits] = k
 
 mws_name_to_bits = dict([v,k] for k,v in mws_bits_to_name.items())
 
